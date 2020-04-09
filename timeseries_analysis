@@ -6,3 +6,5 @@ series
 series=series.replace(0, np.NaN)
 series.plot()
 pyplot.show()
+
+# Compute the monthly climatology of this sea-level timeseries
