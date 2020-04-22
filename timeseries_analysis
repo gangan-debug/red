@@ -1,10 +1,44 @@
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot
-series = pd.read_csv('test.csv', sep=" ", header=None, usecols=[6])
-series
-series=series.replace(0, np.NaN)
-series.plot()
-pyplot.show()
+from matplotlib import pyplot as plt
+series = pd.read_csv('/Users/nalini/Desktop/test.csv', sep=' ', header=None)
+ssh=series[1]
+time=series[0]
+ssh=ssh.replace(-99999, np.NaN)
+ssh=ssh/10
 
 # Compute the monthly climatology (seasonal cycle) of this sea-level timeseries
+nt=(len(ssh))
+nyr=int(nt/12)              # Number of years
+tt=np.resize(ssh,(nyr,12))  # Now each column represent each month! i.e. you will have 'nyr' Jan values in the first column, etc.
+#ttt=np.zeros((12),dtype=np.int64) # To save climatology (not needed indeed)!
+ttt=np.nanmean(tt,axis=0)   # cloumn-wise mean --> climatology!
+field_sc=np.tile(ttt,nyr)   # seasonal cycle extended to the full period!
+
+sla=ssh-field_sc            # Sea-level anomalies w.r.t. climatological state
+
+def moving_average(x, w):
+    return np.convolve(x, np.ones(w), 'same') / w
+
+sla_s=moving_average(sla,5) # applying 5-month smoothing!
+
+import numpy.ma as ma
+a = ma.masked_invalid(sla)
+msk = (~a.mask)
+y = sla[msk]
+x = time[msk]
+
+from scipy import stats
+#dummy_xaxis=np.arange(1,len(sla_s)+1)
+slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+trend = slope*time+intercept
+slv=sla_s-trend
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+plt.subplot(221)
+plt.plot(time,sla_s)
+plt.plot(time,trend)
+plt.show()
+plt.subplot(222)
+plt.plot(time,slv)
+plt.show()
