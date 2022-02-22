@@ -7,15 +7,14 @@ time=series[0]
 ssh=ssh.replace(-99999, np.NaN)
 ssh=ssh/10
 
-# Compute the monthly climatology (seasonal cycle) of this sea-level timeseries
+# Compute the monthly climatology 
 nt=(len(ssh))
 nyr=int(nt/12)              # Number of years
 tt=np.resize(ssh,(nyr,12))  # Now each column represent each month! i.e. you will have 'nyr' Jan values in the first column, etc.
-#ttt=np.zeros((12),dtype=np.int64) # To save climatology (not needed indeed)!
 ttt=np.nanmean(tt,axis=0)   # cloumn-wise mean --> climatology!
 field_sc=np.tile(ttt,nyr)   # seasonal cycle extended to the full period!
 
-sla=ssh-field_sc            # Sea-level anomalies w.r.t. climatological state
+sla=ssh-field_sc            # anomalies w.r.t. climatological state
 
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'same') / w
